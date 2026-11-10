@@ -6,9 +6,49 @@
 #include <esp_log.h>
 #include <esp_rom_uart.h>
 #include <esp_system.h>
+#include <driver/gpio.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+
+// Подключаем заголовки для SD-карты (если они есть в проекте, раскомментируй)
+// #include "furi_hal_storage.h" 
+// #include <esp_vfs_fat.h>
+// #include <sdmmc_cmd.h>
 
 static const char* TAG = "Main";
 
+// ==========================================================
+// НАША ФУНКЦИЯ ПРОВЕРКИ SD-КАРТЫ
+// ==========================================================
+bool check_sd_card_and_setup() {
+    // Здесь мы проверяем, смонтирована ли SD-карта.
+    // В порте Sor3nt обычно есть функция, которая монтирует карту при старте furi_hal_init();
+    // Но так как мы проверяем ДО furi_hal_init(), нам нужно самим попытаться инициализировать пины SD.
+    
+    // TODO: Вставить реальный код проверки SD-карты.
+    // Пока что мы просто ставим заглушку, которая всегда возвращает true.
+    // В реальности тут будет вызов esp_vfs_fat_sdmmc_mount или аналогичной функции.
+    
+    return true; 
+}
+
+// ==========================================================
+// НАША ФУНКЦИЯ ВЫВОДА ОШИБКИ НА ЭКРАН
+// ==========================================================
+void show_sd_error_screen() {
+    // Тут мы должны нарисовать текст на экране.
+    // Так как M5Cardputer не инициализирован (мы же до Furi), 
+    // можно использовать минимальную инициализацию SPI и вывести текст.
+    // Но для простоты пока просто шлем сообщение в лог.
+    ESP_LOGE(TAG, "==========================================");
+    ESP_LOGE(TAG, "  SD CARD NOT DETECTED!                   ");
+    ESP_LOGE(TAG, "  Please insert SD card and reboot device ");
+    ESP_LOGE(TAG, "==========================================");
+}
+
+// ==========================================================
+// ОСТАЛЬНОЙ КОД ОСТАВЛЯЕМ КАК БЫЛО
+// ==========================================================
 static void log_internal_registry(
     const char* label,
     const FlipperInternalApplication* apps,
@@ -59,7 +99,6 @@ static bool registry_contains_appid(
             return true;
         }
     }
-
     return false;
 }
 
@@ -72,7 +111,6 @@ static bool registry_contains_launch(
             return true;
         }
     }
-
     return false;
 }
 
@@ -116,6 +154,22 @@ static void furi_log_esp_callback(const uint8_t* data, size_t size, void* contex
 
 void app_main(void) {
     ESP_LOGI(TAG, "Starting Furi Core on ESP32...");
+
+    // ==========================================================
+    // НАША ПРОВЕРКА SD-КАРТЫ
+    // ==========================================================
+    // Если мы не используем T_Embed (где есть авто-восстановление),
+    // мы проверяем карту перед стартом Furi.
+    if (!check_sd_card_and_setup()) {
+        show_sd_error_screen();
+        // Уходим в бесконечный цикл, чтобы устройство не грузилось дальше
+        while (1) {
+            vTaskDelay(pdMS_TO_TICKS(1000));
+            // (Здесь в будущем можно добавить опрос: если карту вставили, делаем esp_restart())
+        }
+    }
+    // ==========================================================
+
 #if CONFIG_T_EMBED_PLUS_SD_RECOVERY
     esp_reset_reason_t reset_reason = esp_reset_reason();
     ESP_LOGI(TAG, "Plus SD recovery 1.3.2; reset reason=%d", (int)reset_reason);
