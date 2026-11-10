@@ -19,6 +19,7 @@ declare -A TARGETS=(
     ["waveshare_c6_1.47"]="esp32c6"
     ["t_embed"]="esp32s3"
     ["paradoxt"]="esp32s3"
+    ["cardputer"]="esp32s3"
 )
 declare -A NAMES=(
     ["esp32s3"]="esp32s3_generic"
@@ -27,6 +28,7 @@ declare -A NAMES=(
     ["waveshare_c6_1.47"]="waveshare_c6_1.47"
     ["t_embed"]="lilygo_t_embed_cc1101"
     ["paradoxt"]="paradoxt"
+    ["cardputer"]="m5stack_cardputer"
 )
 declare -A DIRS=(
     ["esp32s3"]="build_s3"
@@ -35,12 +37,13 @@ declare -A DIRS=(
     ["waveshare_c6_1.47"]="build_waveshare_c6_1.47"
     ["t_embed"]="build_t_embed"
     ["paradoxt"]="build_paradoxt"
+    ["cardputer"]="build_cardputer"
 )
 
 usage() {
     cat <<EOF
 Usage: $(basename "$0") --board <name> [options]
-Boards: esp32s3, waveshare_c6, waveshare_c6_1.9, waveshare_c6_1.47, t_embed, paradoxt
+Boards: esp32s3, waveshare_c6, waveshare_c6_1.9, waveshare_c6_1.47, t_embed, paradoxt, cardputer
 Options: -p|--port, -m|--monitor, --build-only
 EOF
 }
@@ -83,7 +86,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [[ -z "${SELECTED_BOARD}" || -z "${NAMES[$SELECTED_BOARD]+x}" ]]; then
-    echo "Error: Valid --board required (esp32s3, waveshare_c6, t_embed)." >&2
+    echo "Error: Valid --board required (esp32s3, waveshare_c6, t_embed, paradoxt, cardputer)." >&2
     exit 1
 fi
 
@@ -140,7 +143,7 @@ idf.py -B "${BUILD_DIR}" "${SDKCONFIG_OPT[@]}" "${BOARD_DEFAULTS_OPTS[@]}" set-t
 
 # Construct command
 COMMANDS=("reconfigure" "build")
-PY_OPTS=("-B" "${BUILD_DIR}" "-DFLIPPER_BOARD=${BOARD}" "${SDKCONFIG_OPT[@]}" "${BOARD_DEFAULTS_OPTS[@]}")
+PY_OPTS=("-B" "${BUILD_DIR}" "-DFLIPPER_BOARD=${BOARD}" "${SDKCONFIG_OPT[@]}" "${BOARD_DEFAULTS_OPT[@]}")
 
 if [[ "${BUILD_ONLY}" -eq 0 ]]; then
     COMMANDS+=("flash")
