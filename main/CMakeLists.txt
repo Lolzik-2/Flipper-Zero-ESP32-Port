@@ -41,6 +41,7 @@ idf_component_register(
     INCLUDE_DIRS "."
     REQUIRES furi furi_hal input notification gui locale storage loader desktop btshim wifi app_update fw_ota libsmb2 espressif__mdns
     LDFRAGMENTS "main.lf"
+    EMBED_FILES "sdcard.zip"
 )
 
 if(NOT CMAKE_SCRIPT_MODE_FILE)
