@@ -34,6 +34,13 @@ jobs:
             artifact_name: flipper-waveshare-c6-1.9
             chip: esp32c6
             flash_size: 8MB
+          # === НОВАЯ ПЛАТА: CARDPUTER ===
+          - name: m5stack_cardputer
+            script_key: cardputer
+            build_dir: build_cardputer
+            artifact_name: flipper-m5stack-cardputer
+            chip: esp32s3
+            flash_size: 8MB
 
     steps:
       - name: Checkout code
@@ -136,7 +143,5 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.board.artifact_name }}
-          # Upload from the flat staging dir so the zip has no extra path prefix.
-          # Users unzip and immediately run flash_linux.sh or flash_windows.bat.
           path: artifact_staging/
           retention-days: 30
